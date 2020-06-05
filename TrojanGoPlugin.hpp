@@ -34,7 +34,7 @@ class SimplePlugin
             { SPECIAL_TYPE_KERNEL,                                                                      //
               SPECIAL_TYPE_SERIALIZOR }                                                                 //
         };
-        meta.KernelOutboundCapabilities = { { "trojan", "Trojan" } };
+        meta.KernelOutboundCapabilities = { { "Trojan", "trojan" } };
         return meta;
     }
 
