@@ -1,7 +1,7 @@
 project(QvTrojanGoPlugin)
 cmake_minimum_required(VERSION 3.1.0)
 
-set(CMAKE_CXX_STANDARD 14)
+set(CMAKE_CXX_STANDARD 17)
 
 if(CMAKE_VERSION VERSION_LESS "3.7.0")
     set(CMAKE_INCLUDE_CURRENT_DIR ON)
@@ -21,6 +21,7 @@ include_directories(${QVPLUGIN_INTERFACE_INCLUDE_DIR})
 add_library(${PROJECT_NAME} MODULE
     TrojanGoPlugin.hpp
     TrojanGoPlugin.cpp
+    core/Common.hpp
     core/EventHandler.cpp
     core/EventHandler.hpp
     core/Serializer.cpp
