@@ -7,17 +7,12 @@ bool SimpleKernel::StartKernel()
 {
     return true;
 }
-void SimpleKernel::SetConnectionSettings(const QString &listenAddress, const QMap<QString, int> &inbound, const QJsonObject &settings)
+void SimpleKernel::SetConnectionSettings(const QMap<KernelSetting, QVariant> &settings, const QJsonObject &connectionInfo)
 {
-    Q_UNUSED(inbound)
     Q_UNUSED(settings)
-    Q_UNUSED(listenAddress)
+    Q_UNUSED(connectionInfo)
 }
 bool SimpleKernel::StopKernel()
 {
     return true;
-}
-const QList<Qv2rayPlugin::QvPluginOutboundProtocolObject> SimpleKernel::KernelOutboundCapabilities() const
-{
-    return { { "Fake outbound", "pseudo" } };
 }

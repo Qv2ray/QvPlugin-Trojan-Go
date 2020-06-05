@@ -6,9 +6,7 @@ class SimpleKernel : public Qv2rayPlugin::QvPluginKernel
   public:
     explicit SimpleKernel(QObject *parent = nullptr);
     /// Kernel related operations
-    void SetConnectionSettings(const QString &listenAddress, const QMap<QString, int> &inbound, const QJsonObject &settings) override;
+    void SetConnectionSettings(const QMap<KernelSetting, QVariant> &settings, const QJsonObject &connectionInfo) override;
     bool StartKernel() override;
     bool StopKernel() override;
-    /// Key = DisplayName, Value = protocol.
-    const QList<Qv2rayPlugin::QvPluginOutboundProtocolObject> KernelOutboundCapabilities() const override;
 };

@@ -23,22 +23,22 @@ class SimplePlugin
     // Basic metainfo of this plugin
     const QvPluginMetadata GetMetadata() const override
     {
-        return QvPluginMetadata{
-            "QvSimplePlugin",                                 //
-            "Qv2ray Workgroup",                               //
-            "qvplugin_test",                                  //
-            "QvSimplePlugin is a simple plugin for testing.", //
-            QIcon(":/qv2ray.png"),                            //
-            { CAPABILITY_CONNECTION_ENTRY,                    //
-              CAPABILITY_CONNECTIVITY,                        //
-              CAPABILITY_STATS,                               //
-              CAPABILITY_SYSTEM_PROXY },                      //
-            { SPECIAL_TYPE_KERNEL,                            //
-              SPECIAL_TYPE_SERIALIZOR }                       //
+        // qvtrojan_plugin for conflict with TrojanGFW plugin
+        QvPluginMetadata meta{
+            "Trojan-Go Plugin",                                                                         //
+            "Qv2ray Workgroup",                                                                         //
+            "qvtrojan_plugin",                                                                          //
+            "Connect to Trojan-GFW / Trojan-Go server in Qv2ray, conflicts with the Trojan-GFW plugin", //
+            QIcon(":/qv2ray.png"),                                                                      //
+            {},                                                                                         //
+            { SPECIAL_TYPE_KERNEL,                                                                      //
+              SPECIAL_TYPE_SERIALIZOR }                                                                 //
         };
+        meta.KernelOutboundCapabilities = { { "trojan", "Trojan" } };
+        return meta;
     }
-    //
-    std::shared_ptr<QvPluginKernel> GetKernel() override;
+
+    std::unique_ptr<QvPluginKernel> CreateKernel() override;
     std::shared_ptr<QvPluginSerializer> GetSerializer() override;
     std::shared_ptr<QvPluginEventHandler> GetEventHandler() override;
     std::unique_ptr<QvPluginEditor> GetEditorWidget(UI_TYPE) override;
@@ -56,5 +56,4 @@ class SimplePlugin
     QJsonObject settings;
     std::shared_ptr<QvPluginSerializer> serializer;
     std::shared_ptr<QvPluginEventHandler> eventHandler;
-    std::shared_ptr<QvPluginKernel> kernel;
 };

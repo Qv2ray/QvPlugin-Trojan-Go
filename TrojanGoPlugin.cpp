@@ -1,12 +1,12 @@
-#include "SimplePlugin.hpp"
+#include "TrojanGoPlugin.hpp"
 
 #include <QDateTime>
 #include <QLabel>
 #include <QMetaEnum>
 
-std::shared_ptr<QvPluginKernel> SimplePlugin::GetKernel()
+std::unique_ptr<QvPluginKernel> SimplePlugin::CreateKernel()
 {
-    return kernel;
+    return std::make_unique<SimpleKernel>(this);
 }
 
 bool SimplePlugin::UpdateSettings(const QJsonObject &conf)
@@ -21,7 +21,6 @@ bool SimplePlugin::Initialize(const QString &, const QJsonObject &settings)
     this->settings = settings;
     serializer = std::make_shared<SimpleSerializer>(this);
     eventHandler = std::make_shared<SimpleEventHandler>(this);
-    kernel = std::make_shared<SimpleKernel>(this);
     return true;
 }
 
