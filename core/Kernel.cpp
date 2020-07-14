@@ -1,18 +1,18 @@
 #include "Kernel.hpp"
 
-SimpleKernel::SimpleKernel(QObject *parent) : Qv2rayPlugin::QvPluginKernel(parent)
+QvTrojanGoPluginKernel::QvTrojanGoPluginKernel(QObject *parent) : Qv2rayPlugin::QvPluginKernel(parent)
 {
 }
-bool SimpleKernel::StartKernel()
+bool QvTrojanGoPluginKernel::StartKernel()
 {
     return true;
 }
-void SimpleKernel::SetConnectionSettings(const QMap<KernelSetting, QVariant> &settings, const QJsonObject &connectionInfo)
+void QvTrojanGoPluginKernel::SetConnectionSettings(const QMap<KernelSetting, QVariant> &settings, const QJsonObject &connectionInfo)
 {
     Q_UNUSED(settings)
     Q_UNUSED(connectionInfo)
 }
-bool SimpleKernel::StopKernel()
+bool QvTrojanGoPluginKernel::StopKernel()
 {
     return true;
 }

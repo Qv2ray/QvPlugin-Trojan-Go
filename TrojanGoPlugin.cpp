@@ -6,7 +6,7 @@
 
 std::unique_ptr<QvPluginKernel> SimplePlugin::CreateKernel()
 {
-    return std::make_unique<SimpleKernel>(this);
+    return std::make_unique<QvTrojanGoPluginKernel>(this);
 }
 
 bool SimplePlugin::UpdateSettings(const QJsonObject &conf)
@@ -19,7 +19,7 @@ bool SimplePlugin::Initialize(const QString &, const QJsonObject &settings)
 {
     emit PluginLog("Initialize plugin.");
     this->settings = settings;
-    serializer = std::make_shared<SimpleSerializer>(this);
+    serializer = std::make_shared<TrojanGoSerializer>(this);
     eventHandler = std::make_shared<SimpleEventHandler>(this);
     return true;
 }
