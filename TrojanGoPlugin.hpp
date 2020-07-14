@@ -23,18 +23,17 @@ class SimplePlugin
     // Basic metainfo of this plugin
     const QvPluginMetadata GetMetadata() const override
     {
-        // qvtrojan_plugin for conflict with TrojanGFW plugin
         QvPluginMetadata meta{
             "Trojan-Go Plugin",                                                                         //
             "Qv2ray Workgroup",                                                                         //
-            "qvtrojan_plugin",                                                                          //
+            "qvtrojango_plugin",                                                                        //
             "Connect to Trojan-GFW / Trojan-Go server in Qv2ray, conflicts with the Trojan-GFW plugin", //
             QIcon(":/qv2ray.png"),                                                                      //
             {},                                                                                         //
             { SPECIAL_TYPE_KERNEL,                                                                      //
               SPECIAL_TYPE_SERIALIZOR }                                                                 //
         };
-        meta.KernelOutboundCapabilities = { { "Trojan", "trojan" } };
+        meta.KernelOutboundCapabilities = { { "Trojan-Go", "trojan-go" } };
         return meta;
     }
 
