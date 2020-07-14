@@ -16,7 +16,28 @@ class TrojanGoSerializer : public Qv2rayPlugin::QvPluginSerializer
                                     const QString &groupName, //
                                     const QJsonObject &object) const override
     {
-        return "";
+        Q_UNUSED(groupName)
+        const auto obj = TrojanGoShareLinkObject::fromJson(object);
+        QUrl url;
+        QUrlQuery query;
+        url.setScheme(protocol);
+        url.setHost(obj.server);
+        url.setPort(obj.port);
+        url.setUserInfo(obj.password);
+        url.setFragment(alias);
+        url.setPath("/");
+        //
+        query.addQueryItem("sni", obj.sni);
+        query.addQueryItem("type", TRANSPORT_TYPE_STRING_MAP[obj.type]);
+        query.addQueryItem("host", obj.host);
+        query.addQueryItem("path", obj.path);
+        if (!obj.encryption.isEmpty())
+            query.addQueryItem("encryption", obj.encryption);
+        if (!obj.plugin.isEmpty())
+            query.addQueryItem("plugin", obj.plugin);
+
+        url.setQuery(query);
+        return url.toString();
     }
     const QPair<QString, QJsonObject> DeserializeOutbound(const QString &url, QString *alias, QString *errorMessage) const override
     {
@@ -150,7 +171,7 @@ class TrojanGoSerializer : public Qv2rayPlugin::QvPluginSerializer
     const Qv2rayPlugin::QvPluginOutboundInfoObject GetOutboundInfo(const QString &protocol, const QJsonObject &outbound) const override
     {
         if (protocol == "trojan-go")
-            return { protocol, outbound["server"].toString(), outbound["port"].toInt() };
+            return { outbound["server"].toString(), protocol, outbound["port"].toInt() };
         return {};
     }
     const QList<QString> ShareLinkPrefixes() const override
