@@ -31,6 +31,9 @@ add_library(${PROJECT_NAME} MODULE
     widgets/TrojanGoSettingsWidget.cpp
     widgets/TrojanGoSettingsWidget.hpp
     widgets/TrojanGoSettingsWidget.ui
+    widgets/TrojanGoOutboundWidget.cpp
+    widgets/TrojanGoOutboundWidget.hpp
+    widgets/TrojanGoOutboundWidget.ui
     resx.qrc
     ${QVPLUGIN_INTERFACE_HEADERS})
 

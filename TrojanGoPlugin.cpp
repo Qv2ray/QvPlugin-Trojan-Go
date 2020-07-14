@@ -1,5 +1,6 @@
 #include "TrojanGoPlugin.hpp"
 
+#include "widgets/TrojanGoOutboundWidget.hpp"
 #include "widgets/TrojanGoSettingsWidget.hpp"
 
 #include <QDateTime>
@@ -47,8 +48,8 @@ std::unique_ptr<QvPluginEditor> QvTrojanGoPlugin::GetEditorWidget(UI_TYPE type)
     switch (type)
     {
         case UI_TYPE_INBOUND_EDITOR:
-        case UI_TYPE_OUTBOUND_EDITOR:
         case UI_TYPE_GROUP_EDITOR: break;
+        case UI_TYPE_OUTBOUND_EDITOR: return std::make_unique<TrojanGoOutboundWidget>();
     }
     return nullptr;
 }
