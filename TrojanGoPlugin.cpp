@@ -1,45 +1,48 @@
 #include "TrojanGoPlugin.hpp"
 
+#include "widgets/TrojanGoSettingsWidget.hpp"
+
 #include <QDateTime>
 #include <QLabel>
 #include <QMetaEnum>
 
-std::unique_ptr<QvPluginKernel> SimplePlugin::CreateKernel()
+std::unique_ptr<QvPluginKernel> QvTrojanGoPlugin::CreateKernel()
 {
     return std::make_unique<QvTrojanGoPluginKernel>(this);
 }
 
-bool SimplePlugin::UpdateSettings(const QJsonObject &conf)
+bool QvTrojanGoPlugin::UpdateSettings(const QJsonObject &conf)
 {
     settings = conf;
     return true;
 }
 
-bool SimplePlugin::Initialize(const QString &, const QJsonObject &settings)
+bool QvTrojanGoPlugin::Initialize(const QString &, const QJsonObject &settings)
 {
     emit PluginLog("Initialize plugin.");
+    PluginInstance = this;
     this->settings = settings;
     serializer = std::make_shared<TrojanGoSerializer>(this);
     eventHandler = std::make_shared<SimpleEventHandler>(this);
     return true;
 }
 
-const QJsonObject SimplePlugin::GetSettngs()
+const QJsonObject QvTrojanGoPlugin::GetSettngs()
 {
     return settings;
 }
 
-std::shared_ptr<QvPluginEventHandler> SimplePlugin::GetEventHandler()
+std::shared_ptr<QvPluginEventHandler> QvTrojanGoPlugin::GetEventHandler()
 {
     return eventHandler;
 }
 
-std::unique_ptr<QWidget> SimplePlugin::GetSettingsWidget()
+std::unique_ptr<QWidget> QvTrojanGoPlugin::GetSettingsWidget()
 {
-    return std::make_unique<QLabel>("Text!");
+    return std::make_unique<TrojanGoSettingsWidget>();
 }
 
-std::unique_ptr<QvPluginEditor> SimplePlugin::GetEditorWidget(UI_TYPE type)
+std::unique_ptr<QvPluginEditor> QvTrojanGoPlugin::GetEditorWidget(UI_TYPE type)
 {
     switch (type)
     {
@@ -50,7 +53,7 @@ std::unique_ptr<QvPluginEditor> SimplePlugin::GetEditorWidget(UI_TYPE type)
     return nullptr;
 }
 
-std::shared_ptr<QvPluginSerializer> SimplePlugin::GetSerializer()
+std::shared_ptr<QvPluginSerializer> QvTrojanGoPlugin::GetSerializer()
 {
     return serializer;
 }

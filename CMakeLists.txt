@@ -28,6 +28,9 @@ add_library(${PROJECT_NAME} MODULE
     core/Serializer.hpp
     core/Kernel.cpp
     core/Kernel.hpp
+    widgets/TrojanGoSettingsWidget.cpp
+    widgets/TrojanGoSettingsWidget.hpp
+    widgets/TrojanGoSettingsWidget.ui
     resx.qrc
     ${QVPLUGIN_INTERFACE_HEADERS})
 

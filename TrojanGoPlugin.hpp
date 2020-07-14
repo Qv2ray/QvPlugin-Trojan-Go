@@ -11,7 +11,7 @@
 class QLabel;
 using namespace Qv2rayPlugin;
 
-class SimplePlugin
+class QvTrojanGoPlugin
     : public QObject
     , Qv2rayInterface
 {
@@ -56,3 +56,5 @@ class SimplePlugin
     std::shared_ptr<QvPluginSerializer> serializer;
     std::shared_ptr<QvPluginEventHandler> eventHandler;
 };
+
+inline QvTrojanGoPlugin *PluginInstance = nullptr;
