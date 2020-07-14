@@ -29,15 +29,15 @@ class TrojanGoSerializer : public Qv2rayPlugin::QvPluginSerializer
         //
         query.addQueryItem("sni", obj.sni);
         query.addQueryItem("type", TRANSPORT_TYPE_STRING_MAP[obj.type]);
-        query.addQueryItem("host", obj.host);
-        query.addQueryItem("path", obj.path);
+        query.addQueryItem("host", QUrl::toPercentEncoding(obj.host));
+        query.addQueryItem("path", QUrl::toPercentEncoding(obj.path));
         if (!obj.encryption.isEmpty())
-            query.addQueryItem("encryption", obj.encryption);
+            query.addQueryItem("encryption", QUrl::toPercentEncoding(obj.encryption));
         if (!obj.plugin.isEmpty())
-            query.addQueryItem("plugin", obj.plugin);
+            query.addQueryItem("plugin", QUrl::toPercentEncoding(obj.plugin));
 
         url.setQuery(query);
-        return url.toString();
+        return url.toString(QUrl::FullyDecoded);
     }
     const QPair<QString, QJsonObject> DeserializeOutbound(const QString &url, QString *alias, QString *errorMessage) const override
     {
@@ -48,12 +48,12 @@ class TrojanGoSerializer : public Qv2rayPlugin::QvPluginSerializer
         QUrlQuery query{ link };
         if (!link.isValid())
         {
-            *errorMessage = "SHIT Url";
+            *errorMessage = "Not a valid Url";
             return default;
         }
         if (link.scheme() != "trojan-go")
         {
-            *errorMessage = "SHIT SCHEME";
+            *errorMessage = "Invalid scheme";
             return default;
         }
 
@@ -65,90 +65,110 @@ class TrojanGoSerializer : public Qv2rayPlugin::QvPluginSerializer
         info.password = link.userName(QUrl::FullyDecoded);
         if (info.password.isEmpty())
         {
-            *errorMessage = "SHIT PASSWORD";
+            *errorMessage = "Invalid password";
             return default;
         }
 
         info.server = link.host(QUrl::FullyDecoded);
         if (info.server.isEmpty())
         {
-            *errorMessage = "SHIT SERVER";
+            *errorMessage = "Invalid server address";
             return default;
         }
 
         info.port = link.port(443);
         if (info.port < 1 || info.port > 65535)
         {
-            *errorMessage = "SHIT PORT";
+            *errorMessage = "Invalid port";
             return default;
         }
-
-        info.sni = extractQueryField("sni");
-        if (info.sni.isEmpty())
         {
-            *errorMessage = "SHIT SNI";
-            return default;
-        }
-
-        const auto _type = extractQueryField("type");
-        if (!TRANSPORT_TYPE_STRING_MAP.values().contains(_type))
-        {
-            *errorMessage = "SHIT TYPE";
-            return default;
-        }
-        info.type = TRANSPORT_TYPE_STRING_MAP.key(_type);
-
-        bool hasHost = query.hasQueryItem("host");
-        if (!hasHost)
-        {
-            info.host = info.server;
-        }
-        else
-        {
-            info.host = extractQueryField("host");
-            if (info.host.isEmpty())
+            bool hasSNI = query.hasQueryItem("sni");
+            if (hasSNI)
             {
-                *errorMessage = "SHIT HOST";
-                return default;
+                info.sni = extractQueryField("sni");
+                if (info.sni.isEmpty())
+                {
+                    *errorMessage = "Invalid SNI";
+                    return default;
+                }
+            }
+            else
+            {
+                info.sni = info.server;
             }
         }
-
-        info.path = extractQueryField("path");
-        if (info.type == TRANSPORT_WEBSOCKET)
         {
-            if (info.path.isEmpty())
+            const auto hasType = query.hasQueryItem("type");
+            if (hasType)
             {
-                *errorMessage = "SHIT PATH";
-                return default;
+                const auto _type = extractQueryField("type");
+                if (!TRANSPORT_TYPE_STRING_MAP.values().contains(_type))
+                {
+                    *errorMessage = "Invalid Type";
+                    return default;
+                }
+                info.type = TRANSPORT_TYPE_STRING_MAP.key(_type);
+            }
+            else
+            {
+                info.type = TRANSPORT_ORIGINAL;
             }
         }
-
+        {
+            bool hasHost = query.hasQueryItem("host");
+            if (!hasHost)
+            {
+                info.host = info.server;
+            }
+            else
+            {
+                info.host = extractQueryField("host");
+                if (info.host.isEmpty())
+                {
+                    *errorMessage = "Invalid Host";
+                    return default;
+                }
+            }
+        }
+        {
+            info.path = extractQueryField("path");
+            if (info.type == TRANSPORT_WEBSOCKET)
+            {
+                if (info.path.isEmpty())
+                {
+                    *errorMessage = "Invalid Path";
+                    return default;
+                }
+            }
+        }
         bool hasEncryption = query.hasQueryItem("encryption");
         if (hasEncryption)
         {
             info.encryption = extractQueryField("encryption");
             if (info.encryption.isEmpty())
             {
-                *errorMessage = "SHIT ENCTYPRION EMPTY";
+                *errorMessage = "Encryption should not be empty";
                 return default;
             }
             if (info.encryption.startsWith("ss;"))
             {
                 const auto ssParms = info.encryption.split(";");
-                if (ssParms.length() != 3)
+                if (ssParms.length() != 2)
                 {
-                    *errorMessage = "SHIT SS ENC LENGTH";
+                    *errorMessage = "Shadowsocks argument length invalid.";
                     return default;
-                }
-                if (!VALID_SHADOWSOCKS_ENCRYPTION_LIST.contains(ssParms[1]))
-                {
-                    *errorMessage = "SHIT SS ENC";
-                    return default;
+                    const auto ssParms2 = ssParms[1].split(":");
+                    if (!VALID_SHADOWSOCKS_ENCRYPTION_LIST.contains(ssParms2[0]))
+                    {
+                        *errorMessage = "Shadowsocks encryption not supported.";
+                        return default;
+                    }
                 }
             }
             else
             {
-                *errorMessage = "SHIT ENC NOT SUPPORTED";
+                *errorMessage = "Encryption not supported.";
                 return default;
             }
         }
@@ -159,7 +179,7 @@ class TrojanGoSerializer : public Qv2rayPlugin::QvPluginSerializer
             info.plugin = extractQueryField("plugin");
             if (info.plugin.isEmpty())
             {
-                *errorMessage = "SHIT PLUGIN";
+                *errorMessage = "Plugin Settings invalid";
                 return default;
             }
         }
