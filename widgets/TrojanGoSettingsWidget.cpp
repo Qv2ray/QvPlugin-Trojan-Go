@@ -23,10 +23,13 @@ void TrojanGoSettingsWidget::changeEvent(QEvent *e)
 void TrojanGoSettingsWidget::on_selectKernelBtn_clicked()
 {
     auto path = QFileDialog::getOpenFileName(this, tr("Open Kernel Path"));
-    auto settings = PluginInstance->GetSettngs();
-    settings["kernelPath"] = path;
-    PluginInstance->UpdateSettings(settings);
-    kernelPathTxt->setText(path);
+    if (path.isEmpty())
+    {
+        auto settings = PluginInstance->GetSettngs();
+        settings["kernelPath"] = path;
+        PluginInstance->UpdateSettings(settings);
+        kernelPathTxt->setText(path);
+    }
 }
 
 void TrojanGoSettingsWidget::on_kernelPathTxt_textEdited(const QString &arg1)
