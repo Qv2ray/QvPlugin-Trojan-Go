@@ -10,7 +10,14 @@ QvTrojanGoPluginKernel::QvTrojanGoPluginKernel(QObject *parent) : Qv2rayPlugin::
 
 bool QvTrojanGoPluginKernel::StartKernel()
 {
-    process.setProgram(PluginInstance->GetSettngs()["kernelPath"].toString());
+    const auto executablePath = PluginInstance->GetSettngs()["kernelPath"].toString();
+    if (!QFile::exists(executablePath))
+    {
+        QMessageBox::warning(nullptr, tr("Stupid Configuration?"), tr("We cannot find your Trojan-Go kernel. Please configure it in the plugin settings."));
+        return false;
+    }
+
+    process.setProgram(executablePath);
     process.setArguments({ "-url", url, "-url-option",
                            QString(mux ? "mux=true;listen=" : "mux=false;listen=") + listenAddress + ":" + QString::number(listenPort) });
     process.start();
