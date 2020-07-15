@@ -23,7 +23,7 @@ void TrojanGoSettingsWidget::changeEvent(QEvent *e)
 void TrojanGoSettingsWidget::on_selectKernelBtn_clicked()
 {
     auto path = QFileDialog::getOpenFileName(this, tr("Open Kernel Path"));
-    if (path.isEmpty())
+    if (!path.isEmpty())
     {
         auto settings = PluginInstance->GetSettngs();
         settings["kernelPath"] = path;
