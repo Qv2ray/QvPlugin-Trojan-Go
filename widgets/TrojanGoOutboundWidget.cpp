@@ -39,3 +39,8 @@ void TrojanGoOutboundWidget::on_encryptionTxt_textEdited(const QString &arg1)
 {
     config.encryption = arg1;
 }
+
+void TrojanGoOutboundWidget::on_passwordTxt_textEdited(const QString &arg1)
+{
+    config.password = arg1;
+}

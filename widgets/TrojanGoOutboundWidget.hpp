@@ -30,6 +30,7 @@ class TrojanGoOutboundWidget
         pathTxt->setText(config.path);
         typeCombo->setCurrentText(TRANSPORT_TYPE_STRING_MAP[config.type]);
         encryptionTxt->setText(config.encryption);
+        passwordTxt->setText(config.password);
     }
 
     const QJsonObject GetContent() const override
@@ -54,4 +55,5 @@ class TrojanGoOutboundWidget
     void on_hostTxt_textEdited(const QString &arg1);
     void on_pathTxt_textEdited(const QString &arg1);
     void on_encryptionTxt_textEdited(const QString &arg1);
+    void on_passwordTxt_textEdited(const QString &arg1);
 };
