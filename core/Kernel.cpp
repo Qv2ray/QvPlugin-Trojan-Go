@@ -13,7 +13,8 @@ bool QvTrojanGoPluginKernel::StartKernel()
     const auto executablePath = PluginInstance->GetSettngs()["kernelPath"].toString();
     if (!QFile::exists(executablePath))
     {
-        QMessageBox::warning(nullptr, tr("Stupid Configuration?"), tr("We cannot find your Trojan-Go kernel. Please configure it in the plugin settings."));
+        QMessageBox::warning(nullptr, tr("Stupid Configuration?"),
+                             tr("We cannot find your Trojan-Go kernel. Please configure it in the plugin settings."));
         return false;
     }
 
@@ -28,10 +29,11 @@ bool QvTrojanGoPluginKernel::StartKernel()
 
 void QvTrojanGoPluginKernel::SetConnectionSettings(const QMap<KernelSetting, QVariant> &settings, const QJsonObject &connectionInfo)
 {
-    mux = true;
     listenAddress = settings[KERNEL_LISTEN_ADDRESS].toString();
     listenPort = settings[KERNEL_HTTP_ENABLED].toBool() ? settings[KERNEL_HTTP_PORT].toInt() : settings[KERNEL_SOCKS_PORT].toInt();
     url = TrojanGoSerializer().SerializeOutbound("trojan-go", "", "", connectionInfo);
+    const auto obj = TrojanGoShareLinkObject::fromJson(connectionInfo);
+    mux = obj.mux;
 }
 
 void QvTrojanGoPluginKernel::OnProcessClosed()

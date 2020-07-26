@@ -52,3 +52,8 @@ void TrojanGoOutboundWidget::on_typeCombo_currentIndexChanged(int index)
     pathTxt->setEnabled(index == 1);
     encryptionTxt->setEnabled(index == 1);
 }
+
+void TrojanGoOutboundWidget::on_muxCB_stateChanged(int arg1)
+{
+    config.mux = arg1 == Qt::Checked;
+}

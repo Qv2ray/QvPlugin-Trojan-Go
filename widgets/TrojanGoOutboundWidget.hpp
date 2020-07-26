@@ -31,6 +31,7 @@ class TrojanGoOutboundWidget
         typeCombo->setCurrentText(TRANSPORT_TYPE_STRING_MAP[config.type]);
         encryptionTxt->setText(config.encryption);
         passwordTxt->setText(config.password);
+        muxCB->setChecked(config.mux);
         on_typeCombo_currentIndexChanged(typeCombo->currentIndex());
     }
 
@@ -58,4 +59,5 @@ class TrojanGoOutboundWidget
     void on_encryptionTxt_textEdited(const QString &arg1);
     void on_passwordTxt_textEdited(const QString &arg1);
     void on_typeCombo_currentIndexChanged(int index);
+    void on_muxCB_stateChanged(int arg1);
 };
