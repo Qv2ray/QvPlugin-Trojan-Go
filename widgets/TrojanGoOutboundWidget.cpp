@@ -44,3 +44,10 @@ void TrojanGoOutboundWidget::on_passwordTxt_textEdited(const QString &arg1)
 {
     config.password = arg1;
 }
+
+void TrojanGoOutboundWidget::on_typeCombo_currentIndexChanged(int index)
+{
+    hostTxt->setEnabled(index == 1);
+    pathTxt->setEnabled(index == 1);
+    encryptionTxt->setEnabled(index == 1);
+}

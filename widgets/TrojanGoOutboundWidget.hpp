@@ -56,4 +56,5 @@ class TrojanGoOutboundWidget
     void on_pathTxt_textEdited(const QString &arg1);
     void on_encryptionTxt_textEdited(const QString &arg1);
     void on_passwordTxt_textEdited(const QString &arg1);
+    void on_typeCombo_currentIndexChanged(int index);
 };
