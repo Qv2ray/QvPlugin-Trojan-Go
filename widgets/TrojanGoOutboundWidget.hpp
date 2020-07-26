@@ -31,6 +31,7 @@ class TrojanGoOutboundWidget
         typeCombo->setCurrentText(TRANSPORT_TYPE_STRING_MAP[config.type]);
         encryptionTxt->setText(config.encryption);
         passwordTxt->setText(config.password);
+        on_typeCombo_currentIndexChanged(typeCombo->currentIndex());
     }
 
     const QJsonObject GetContent() const override

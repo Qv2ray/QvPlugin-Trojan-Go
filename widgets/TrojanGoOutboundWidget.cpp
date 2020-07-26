@@ -3,6 +3,7 @@
 TrojanGoOutboundWidget::TrojanGoOutboundWidget(QWidget *parent) : Qv2rayPlugin::QvPluginEditor(parent)
 {
     setupUi(this);
+    SetContent({});
 }
 
 void TrojanGoOutboundWidget::changeEvent(QEvent *e)
