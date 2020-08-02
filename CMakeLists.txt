@@ -36,6 +36,12 @@ add_library(${PROJECT_NAME} MODULE
     widgets/TrojanGoOutboundWidget.ui
     resx.qrc
     ${QVPLUGIN_INTERFACE_HEADERS})
+    
+if(APPLE)
+    add_custom_command(TARGET ${PROJECT_NAME}
+        POST_BUILD
+        COMMAND ${CMAKE_INSTALL_NAME_TOOL} -add_rpath "@executable_path/../Frameworks/" $<TARGET_FILE:${PROJECT_NAME}>)
+endif()
 
 target_link_libraries(${PROJECT_NAME}
     Qt5::Core
