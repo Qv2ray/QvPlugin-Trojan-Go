@@ -29,13 +29,15 @@ class TrojanGoSerializer : public Qv2rayPlugin::QvPluginSerializer
         //
         query.addQueryItem("sni", obj.sni);
         query.addQueryItem("type", TRANSPORT_TYPE_STRING_MAP[obj.type]);
-        query.addQueryItem("host", QUrl::toPercentEncoding(obj.host));
-        query.addQueryItem("path", QUrl::toPercentEncoding(obj.path));
-        if (!obj.encryption.isEmpty())
-            query.addQueryItem("encryption", QUrl::toPercentEncoding(obj.encryption));
-        if (!obj.plugin.isEmpty())
-            query.addQueryItem("plugin", QUrl::toPercentEncoding(obj.plugin));
-
+        if (obj.type == TRANSPORT_WEBSOCKET)
+        {
+            query.addQueryItem("host", QUrl::toPercentEncoding(obj.host));
+            query.addQueryItem("path", QUrl::toPercentEncoding(obj.path));
+            if (!obj.encryption.isEmpty())
+                query.addQueryItem("encryption", QUrl::toPercentEncoding(obj.encryption));
+            if (!obj.plugin.isEmpty())
+                query.addQueryItem("plugin", QUrl::toPercentEncoding(obj.plugin));
+        }
         url.setQuery(query);
         return url.toString(QUrl::FullyDecoded);
     }
