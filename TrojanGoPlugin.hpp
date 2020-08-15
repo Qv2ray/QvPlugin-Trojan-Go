@@ -8,7 +8,6 @@
 #include <QObject>
 #include <QtPlugin>
 
-class QLabel;
 using namespace Qv2rayPlugin;
 
 class QvTrojanGoPlugin
@@ -23,38 +22,24 @@ class QvTrojanGoPlugin
     // Basic metainfo of this plugin
     const QvPluginMetadata GetMetadata() const override
     {
-        QvPluginMetadata meta{
-            "Trojan-Go Plugin",                                   //
-            "Qv2ray Workgroup",                                   //
-            "qvtrojango_plugin",                                  //
-            "Connect to Trojan-GFW / Trojan-Go server in Qv2ray", //
-            QIcon(":/qv2ray.png"),                                //
-            {},                                                   //
-            { SPECIAL_TYPE_KERNEL,                                //
-              SPECIAL_TYPE_SERIALIZOR }                           //
+        return QvPluginMetadata{
+            "Trojan-Go Plugin",                                 //
+            "Qv2ray Workgroup",                                 //
+            "qvtrojango_plugin",                                //
+            "Connect to Trojan-GFW/Trojan-Go server in Qv2ray", //
+            "v3.0.0",                                           //
+            "Qv2ray/QvPlugin-Command",                          //
+            {
+                COMPONENT_GUI,             //
+                COMPONENT_KERNEL,          //
+                COMPONENT_OUTBOUND_HANDLER //
+            },
+            UPDATE_GITHUB_RELEASE //
         };
-        meta.KernelOutboundCapabilities = { { "Trojan-Go", "trojan-go" } };
-        return meta;
     }
+    bool InitializePlugin(const QString &, const QJsonObject &) override;
 
-    std::unique_ptr<QvPluginKernel> CreateKernel() override;
-    std::shared_ptr<QvPluginSerializer> GetSerializer() override;
-    std::shared_ptr<QvPluginEventHandler> GetEventHandler() override;
-    std::unique_ptr<QvPluginEditor> GetEditorWidget(UI_TYPE) override;
-    std::unique_ptr<QWidget> GetSettingsWidget() override;
-    //
-    bool UpdateSettings(const QJsonObject &) override;
-    bool Initialize(const QString &, const QJsonObject &) override;
-    const QJsonObject GetSettngs() override;
-    //
   signals:
     void PluginLog(const QString &) const override;
-    void PluginErrorMessageBox(const QString &) const override;
-
-  private:
-    QJsonObject settings;
-    std::shared_ptr<QvPluginSerializer> serializer;
-    std::shared_ptr<QvPluginEventHandler> eventHandler;
+    void PluginErrorMessageBox(const QString &, const QString &) const override;
 };
-
-inline QvTrojanGoPlugin *PluginInstance = nullptr;

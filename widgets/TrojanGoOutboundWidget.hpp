@@ -1,6 +1,7 @@
 #pragma once
 
 #include "core/Common.hpp"
+#include "interface/QvGUIPluginInterface.hpp"
 #include "interface/QvPluginProcessor.hpp"
 #include "ui_TrojanGoOutboundWidget.h"
 
@@ -12,12 +13,14 @@ class TrojanGoOutboundWidget
 
   public:
     explicit TrojanGoOutboundWidget(QWidget *parent = nullptr);
-    void SetHostInfo(const QString &address, int port) override
+
+    void SetHostAddress(const QString &address, int port) override
     {
         config.server = address;
         config.port = port;
     }
-    QPair<QString, int> GetHostInfo() const override
+
+    QPair<QString, int> GetHostAddress() const override
     {
         return { config.server, config.port };
     }
@@ -38,14 +41,6 @@ class TrojanGoOutboundWidget
     const QJsonObject GetContent() const override
     {
         return config.toJson();
-    }
-
-    // No-op
-    void SwitchOutbound(const QString &) override{};
-
-    QList<Qv2rayPlugin::QvPluginOutboundProtocolObject> OutboundCapabilities() const override
-    {
-        return { { "Trojan-Go", "trojan-go" } };
     }
 
   protected:

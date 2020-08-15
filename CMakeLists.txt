@@ -16,6 +16,7 @@ set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 
 set(QVPLUGIN_INTERFACE_INCLUDE_DIR "interface/")
 include(interface/QvPluginInterface.cmake)
+include(interface/QvGUIPluginInterface.cmake)
 include_directories(${QVPLUGIN_INTERFACE_INCLUDE_DIR})
 
 add_library(${PROJECT_NAME} MODULE
@@ -34,8 +35,10 @@ add_library(${PROJECT_NAME} MODULE
     widgets/TrojanGoOutboundWidget.cpp
     widgets/TrojanGoOutboundWidget.hpp
     widgets/TrojanGoOutboundWidget.ui
+    ui/GUIInterface.hpp
     resx.qrc
-    ${QVPLUGIN_INTERFACE_HEADERS})
+    ${QVPLUGIN_INTERFACE_HEADERS}
+    ${QVGUIPLUGIN_INTERFACE_HEADERS})
     
 if(APPLE)
     add_custom_command(TARGET ${PROJECT_NAME}

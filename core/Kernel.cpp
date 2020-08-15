@@ -2,7 +2,9 @@
 
 #include "TrojanGoPlugin.hpp"
 
-QvTrojanGoPluginKernel::QvTrojanGoPluginKernel(QObject *parent) : Qv2rayPlugin::QvPluginKernel(parent)
+#include <QFile>
+
+QvTrojanGoPluginKernel::QvTrojanGoPluginKernel() : Qv2rayPlugin::PluginKernel()
 {
     connect(&process, &QProcess::channelReadyRead, this, &QvTrojanGoPluginKernel::OnProcessOutputReadyRead);
     connect(&process, &QProcess::stateChanged, this, &QvTrojanGoPluginKernel::OnProcessClosed);
@@ -10,11 +12,11 @@ QvTrojanGoPluginKernel::QvTrojanGoPluginKernel(QObject *parent) : Qv2rayPlugin::
 
 bool QvTrojanGoPluginKernel::StartKernel()
 {
-    const auto executablePath = PluginInstance->GetSettngs()["kernelPath"].toString();
+    const auto executablePath = pluginInstance->GetSettngs()["kernelPath"].toString();
     if (!QFile::exists(executablePath))
     {
-        QMessageBox::warning(nullptr, tr("Stupid Configuration?"),
-                             tr("We cannot find your Trojan-Go kernel. Please configure it in the plugin settings."));
+        pluginInstance->PluginErrorMessageBox(tr("Stupid Configuration?"),
+                                              tr("We cannot find your Trojan-Go kernel. Please configure it in the plugin settings."));
         return false;
     }
 
@@ -27,7 +29,8 @@ bool QvTrojanGoPluginKernel::StartKernel()
     return true;
 }
 
-void QvTrojanGoPluginKernel::SetConnectionSettings(const QMap<KernelSetting, QVariant> &settings, const QJsonObject &connectionInfo)
+void QvTrojanGoPluginKernel::SetConnectionSettings(const QMap<Qv2rayPlugin::KernelOptionFlags, QVariant> &settings,
+                                                   const QJsonObject &connectionInfo)
 {
     listenAddress = settings[KERNEL_LISTEN_ADDRESS].toString();
     listenPort = settings[KERNEL_HTTP_ENABLED].toBool() ? settings[KERNEL_HTTP_PORT].toInt() : settings[KERNEL_SOCKS_PORT].toInt();

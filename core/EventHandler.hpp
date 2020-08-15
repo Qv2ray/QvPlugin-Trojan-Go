@@ -1,10 +1,10 @@
 #pragma once
 #include "QvPluginProcessor.hpp"
 
-class SimpleEventHandler : public Qv2rayPlugin::QvPluginEventHandler
+class SimpleEventHandler : public Qv2rayPlugin::PluginEventHandler
 {
   public:
-    SimpleEventHandler(QObject *parent = nullptr);
+    SimpleEventHandler();
     QvPlugin_EventHandler_Decl(SystemProxy);
     QvPlugin_EventHandler_Decl(Connectivity);
     QvPlugin_EventHandler_Decl(ConnectionStats);
