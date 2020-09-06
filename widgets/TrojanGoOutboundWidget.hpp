@@ -1,6 +1,7 @@
 #pragma once
 
 #include "core/Common.hpp"
+#include "interface/QvGUIPluginInterface.hpp"
 #include "interface/QvPluginProcessor.hpp"
 #include "ui_TrojanGoOutboundWidget.h"
 
@@ -12,12 +13,14 @@ class TrojanGoOutboundWidget
 
   public:
     explicit TrojanGoOutboundWidget(QWidget *parent = nullptr);
-    void SetHostInfo(const QString &address, int port) override
+
+    void SetHostAddress(const QString &address, int port) override
     {
         config.server = address;
         config.port = port;
     }
-    QPair<QString, int> GetHostInfo() const override
+
+    QPair<QString, int> GetHostAddress() const override
     {
         return { config.server, config.port };
     }
@@ -30,19 +33,14 @@ class TrojanGoOutboundWidget
         pathTxt->setText(config.path);
         typeCombo->setCurrentText(TRANSPORT_TYPE_STRING_MAP[config.type]);
         encryptionTxt->setText(config.encryption);
+        passwordTxt->setText(config.password);
+        muxCB->setChecked(config.mux);
+        on_typeCombo_currentIndexChanged(typeCombo->currentIndex());
     }
 
     const QJsonObject GetContent() const override
     {
         return config.toJson();
-    }
-
-    // No-op
-    void SwitchOutbound(const QString &) override{};
-
-    QList<Qv2rayPlugin::QvPluginOutboundProtocolObject> OutboundCapabilities() const override
-    {
-        return { { "Trojan-Go", "trojan-go" } };
     }
 
   protected:
@@ -54,4 +52,7 @@ class TrojanGoOutboundWidget
     void on_hostTxt_textEdited(const QString &arg1);
     void on_pathTxt_textEdited(const QString &arg1);
     void on_encryptionTxt_textEdited(const QString &arg1);
+    void on_passwordTxt_textEdited(const QString &arg1);
+    void on_typeCombo_currentIndexChanged(int index);
+    void on_muxCB_stateChanged(int arg1);
 };

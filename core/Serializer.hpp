@@ -6,11 +6,12 @@
 #include <QUrl>
 #include <QUrlQuery>
 
-class TrojanGoSerializer : public Qv2rayPlugin::QvPluginSerializer
+using namespace Qv2rayPlugin;
+
+class TrojanGoSerializer : public PluginOutboundHandler
 {
-    Q_OBJECT
   public:
-    explicit TrojanGoSerializer(QObject *parent = nullptr) : QvPluginSerializer(parent){};
+    explicit TrojanGoSerializer() : PluginOutboundHandler(){};
     const QString SerializeOutbound(const QString &protocol,  //
                                     const QString &alias,     //
                                     const QString &groupName, //
@@ -29,32 +30,31 @@ class TrojanGoSerializer : public Qv2rayPlugin::QvPluginSerializer
         //
         query.addQueryItem("sni", obj.sni);
         query.addQueryItem("type", TRANSPORT_TYPE_STRING_MAP[obj.type]);
-        query.addQueryItem("host", QUrl::toPercentEncoding(obj.host));
-        query.addQueryItem("path", QUrl::toPercentEncoding(obj.path));
-        if (!obj.encryption.isEmpty())
-            query.addQueryItem("encryption", QUrl::toPercentEncoding(obj.encryption));
-        if (!obj.plugin.isEmpty())
-            query.addQueryItem("plugin", QUrl::toPercentEncoding(obj.plugin));
-
+        if (obj.type == TRANSPORT_WEBSOCKET)
+        {
+            query.addQueryItem("host", QUrl::toPercentEncoding(obj.host));
+            query.addQueryItem("path", QUrl::toPercentEncoding(obj.path));
+            if (!obj.encryption.isEmpty())
+                query.addQueryItem("encryption", QUrl::toPercentEncoding(obj.encryption));
+            if (!obj.plugin.isEmpty())
+                query.addQueryItem("plugin", QUrl::toPercentEncoding(obj.plugin));
+        }
         url.setQuery(query);
         return url.toString(QUrl::FullyDecoded);
     }
     const QPair<QString, QJsonObject> DeserializeOutbound(const QString &url, QString *alias, QString *errorMessage) const override
     {
-#define default                                                                                                                                 \
-    {                                                                                                                                           \
-    }
         QUrl link{ url };
         QUrlQuery query{ link };
         if (!link.isValid())
         {
             *errorMessage = "Not a valid Url";
-            return default;
+            return {};
         }
         if (link.scheme() != "trojan-go")
         {
             *errorMessage = "Invalid scheme";
-            return default;
+            return {};
         }
 
         const auto extractQueryField = [&query](const QString &key) -> QString {
@@ -66,21 +66,21 @@ class TrojanGoSerializer : public Qv2rayPlugin::QvPluginSerializer
         if (info.password.isEmpty())
         {
             *errorMessage = "Invalid password";
-            return default;
+            return {};
         }
 
         info.server = link.host(QUrl::FullyDecoded);
         if (info.server.isEmpty())
         {
             *errorMessage = "Invalid server address";
-            return default;
+            return {};
         }
 
         info.port = link.port(443);
         if (info.port < 1 || info.port > 65535)
         {
             *errorMessage = "Invalid port";
-            return default;
+            return {};
         }
         {
             bool hasSNI = query.hasQueryItem("sni");
@@ -90,7 +90,7 @@ class TrojanGoSerializer : public Qv2rayPlugin::QvPluginSerializer
                 if (info.sni.isEmpty())
                 {
                     *errorMessage = "Invalid SNI";
-                    return default;
+                    return {};
                 }
             }
             else
@@ -106,7 +106,7 @@ class TrojanGoSerializer : public Qv2rayPlugin::QvPluginSerializer
                 if (!TRANSPORT_TYPE_STRING_MAP.values().contains(_type))
                 {
                     *errorMessage = "Invalid Type";
-                    return default;
+                    return {};
                 }
                 info.type = TRANSPORT_TYPE_STRING_MAP.key(_type);
             }
@@ -127,7 +127,7 @@ class TrojanGoSerializer : public Qv2rayPlugin::QvPluginSerializer
                 if (info.host.isEmpty())
                 {
                     *errorMessage = "Invalid Host";
-                    return default;
+                    return {};
                 }
             }
         }
@@ -138,7 +138,7 @@ class TrojanGoSerializer : public Qv2rayPlugin::QvPluginSerializer
                 if (info.path.isEmpty())
                 {
                     *errorMessage = "Invalid Path";
-                    return default;
+                    return {};
                 }
             }
         }
@@ -149,7 +149,7 @@ class TrojanGoSerializer : public Qv2rayPlugin::QvPluginSerializer
             if (info.encryption.isEmpty())
             {
                 *errorMessage = "Encryption should not be empty";
-                return default;
+                return {};
             }
             if (info.encryption.startsWith("ss;"))
             {
@@ -157,19 +157,19 @@ class TrojanGoSerializer : public Qv2rayPlugin::QvPluginSerializer
                 if (ssParms.length() != 2)
                 {
                     *errorMessage = "Shadowsocks argument length invalid.";
-                    return default;
+                    return {};
                     const auto ssParms2 = ssParms[1].split(":");
                     if (!VALID_SHADOWSOCKS_ENCRYPTION_LIST.contains(ssParms2[0]))
                     {
                         *errorMessage = "Shadowsocks encryption not supported.";
-                        return default;
+                        return {};
                     }
                 }
             }
             else
             {
                 *errorMessage = "Encryption not supported.";
-                return default;
+                return {};
             }
         }
 
@@ -180,25 +180,31 @@ class TrojanGoSerializer : public Qv2rayPlugin::QvPluginSerializer
             if (info.plugin.isEmpty())
             {
                 *errorMessage = "Plugin Settings invalid";
-                return default;
+                return {};
             }
         }
 
         *alias = link.fragment(QUrl::FullyDecoded);
         return { "trojan-go", info.toJson() };
-#undef default
     }
-    const Qv2rayPlugin::QvPluginOutboundInfoObject GetOutboundInfo(const QString &protocol, const QJsonObject &outbound) const override
+
+    const Qv2rayPlugin::OutboundInfoObject GetOutboundInfo(const QString &protocol, const QJsonObject &outbound) const override
     {
         if (protocol == "trojan-go")
-            return { outbound["server"].toString(), protocol, outbound["port"].toInt() };
+            return {
+                { INFO_SERVER, outbound["server"].toString() }, //
+                { INFO_PORT, outbound["port"].toInt() },        //
+                { INFO_PROTOCOL, protocol }                     //
+            };
         return {};
     }
-    const QList<QString> ShareLinkPrefixes() const override
+
+    const QList<QString> SupportedLinkPrefixes() const override
     {
         return { "trojan-go://" };
     }
-    const QList<QString> OutboundProtocols() const override
+
+    const QList<QString> SupportedProtocols() const override
     {
         return { "trojan-go" };
     }

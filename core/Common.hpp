@@ -17,6 +17,7 @@ struct TrojanGoShareLinkObject
 {
     QString server;
     int port;
+    bool mux = false;
     QString password;
     QString sni;
     TrojanGoTransportType type;
@@ -24,5 +25,5 @@ struct TrojanGoShareLinkObject
     QString path;
     QString encryption;
     QString plugin;
-    JSONSTRUCT_REGISTER(TrojanGoShareLinkObject, F(server, port, password, sni, type, host, path, encryption, plugin))
+    JSONSTRUCT_REGISTER(TrojanGoShareLinkObject, F(server, port, mux, password, sni, type, host, path, encryption, plugin))
 };

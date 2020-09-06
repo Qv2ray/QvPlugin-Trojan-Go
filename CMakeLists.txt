@@ -1,4 +1,4 @@
-project(QvTrojanGoPlugin)
+project(QvPlugin-TrojanGo)
 cmake_minimum_required(VERSION 3.1.0)
 
 set(CMAKE_CXX_STANDARD 17)
@@ -16,6 +16,7 @@ set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 
 set(QVPLUGIN_INTERFACE_INCLUDE_DIR "interface/")
 include(interface/QvPluginInterface.cmake)
+include(interface/QvGUIPluginInterface.cmake)
 include_directories(${QVPLUGIN_INTERFACE_INCLUDE_DIR})
 
 add_library(${PROJECT_NAME} MODULE
@@ -34,8 +35,16 @@ add_library(${PROJECT_NAME} MODULE
     widgets/TrojanGoOutboundWidget.cpp
     widgets/TrojanGoOutboundWidget.hpp
     widgets/TrojanGoOutboundWidget.ui
+    ui/GUIInterface.hpp
     resx.qrc
-    ${QVPLUGIN_INTERFACE_HEADERS})
+    ${QVPLUGIN_INTERFACE_HEADERS}
+    ${QVGUIPLUGIN_INTERFACE_HEADERS})
+    
+if(APPLE)
+    add_custom_command(TARGET ${PROJECT_NAME}
+        POST_BUILD
+        COMMAND ${CMAKE_INSTALL_NAME_TOOL} -add_rpath "@executable_path/../Frameworks/" $<TARGET_FILE:${PROJECT_NAME}>)
+endif()
 
 target_link_libraries(${PROJECT_NAME}
     Qt5::Core

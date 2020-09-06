@@ -3,11 +3,9 @@
 #include "TrojanGoPlugin.hpp"
 
 #include <QFileDialog>
-TrojanGoSettingsWidget::TrojanGoSettingsWidget(QWidget *parent) : QWidget(parent)
+TrojanGoSettingsWidget::TrojanGoSettingsWidget(QWidget *parent) : Qv2rayPlugin::QvPluginSettingsWidget(parent)
 {
     setupUi(this);
-    auto settings = PluginInstance->GetSettngs();
-    kernelPathTxt->setText(settings["kernelPath"].toString());
 }
 
 void TrojanGoSettingsWidget::changeEvent(QEvent *e)
@@ -25,16 +23,12 @@ void TrojanGoSettingsWidget::on_selectKernelBtn_clicked()
     auto path = QFileDialog::getOpenFileName(this, tr("Open Kernel Path"));
     if (!path.isEmpty())
     {
-        auto settings = PluginInstance->GetSettngs();
         settings["kernelPath"] = path;
-        PluginInstance->UpdateSettings(settings);
         kernelPathTxt->setText(path);
     }
 }
 
 void TrojanGoSettingsWidget::on_kernelPathTxt_textEdited(const QString &arg1)
 {
-    auto settings = PluginInstance->GetSettngs();
     settings["kernelPath"] = arg1;
-    PluginInstance->UpdateSettings(settings);
 }
