@@ -43,4 +43,4 @@ class QvTrojanGoPlugin
     void PluginErrorMessageBox(const QString &, const QString &) const override;
 };
 
-inline QvTrojanGoPlugin *PluginInstance;
+DECLARE_PLUGIN_INSTANCE(QvTrojanGoPlugin);

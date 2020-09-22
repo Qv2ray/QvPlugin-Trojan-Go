@@ -12,11 +12,11 @@ QvTrojanGoPluginKernel::QvTrojanGoPluginKernel() : Qv2rayPlugin::PluginKernel()
 
 bool QvTrojanGoPluginKernel::StartKernel()
 {
-    const auto executablePath = PluginInstance->GetSettngs()["kernelPath"].toString();
+    const auto executablePath = QvTrojanGoPluginInstance->GetSettngs()["kernelPath"].toString();
     if (!QFile::exists(executablePath))
     {
-        PluginInstance->PluginErrorMessageBox(tr("Stupid Configuration?"),
-                                              tr("We cannot find your Trojan-Go kernel. Please configure it in the plugin settings."));
+        QvTrojanGoPluginInstance->PluginErrorMessageBox(tr("Stupid Configuration?"),
+                                                        tr("We cannot find your Trojan-Go kernel. Please configure it in the plugin settings."));
         return false;
     }
 
