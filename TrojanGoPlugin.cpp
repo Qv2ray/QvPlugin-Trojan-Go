@@ -9,6 +9,7 @@
 bool QvTrojanGoPlugin::InitializePlugin(const QString &, const QJsonObject &)
 {
     emit PluginLog("Initialize plugin.");
+    PluginInstance = this;
     outboundHandler = std::make_shared<TrojanGoSerializer>();
     eventHandler = std::make_shared<SimpleEventHandler>();
     kernelInterface = std::make_unique<TrojanGoPluginKernelInterface>();

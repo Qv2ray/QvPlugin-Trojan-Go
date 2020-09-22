@@ -14,7 +14,6 @@ set(CMAKE_AUTORCC ON)
 find_package(Qt5 COMPONENTS Core Widgets Gui REQUIRED)
 set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 
-set(QVPLUGIN_INTERFACE_INCLUDE_DIR "interface/")
 include(interface/QvPluginInterface.cmake)
 include(interface/QvGUIPluginInterface.cmake)
 include_directories(${QVPLUGIN_INTERFACE_INCLUDE_DIR})
