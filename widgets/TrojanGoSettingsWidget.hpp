@@ -3,6 +3,8 @@
 #include "interface/QvGUIPluginInterface.hpp"
 #include "ui_TrojanGoSettingsWidget.h"
 
+#include <optional>
+
 /**
  * @brief Kernel Path Checker Result
  */
