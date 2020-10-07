@@ -28,8 +28,9 @@ class TrojanGoSerializer : public PluginOutboundHandler
         url.setFragment(alias);
         url.setPath("/");
         //
-        query.addQueryItem("sni", obj.sni);
         query.addQueryItem("type", TRANSPORT_TYPE_STRING_MAP[obj.type]);
+        if (!obj.sni.isEmpty())
+            query.addQueryItem("sni", obj.sni);
         if (obj.type == TRANSPORT_WEBSOCKET)
         {
             query.addQueryItem("host", QUrl::toPercentEncoding(obj.host));
