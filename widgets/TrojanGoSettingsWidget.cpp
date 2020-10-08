@@ -2,8 +2,11 @@
 
 #include "TrojanGoPlugin.hpp"
 
+#include <QDrag>
+#include <QDragEnterEvent>
 #include <QFileDialog>
 #include <QMessageBox>
+#include <QMimeData>
 
 TrojanGoSettingsWidget::TrojanGoSettingsWidget(QWidget *parent) : Qv2rayPlugin::QvPluginSettingsWidget(parent)
 {
@@ -23,11 +26,14 @@ void TrojanGoSettingsWidget::changeEvent(QEvent *e)
 std::tuple<KernelPathCheckerResult, std::optional<QString>> TrojanGoSettingsWidget::preliminaryKernelPathChecker(const QString &pathToKernel)
 {
     // some random extensions that doesn't seem to be a Trojan-Go kernel.
-    const QStringList nonKernelExtensions = { ".so", ".dll", ".dylib", ".zip", ".rar", ".gz", ".tar", ".xz" };
-    if (std::any_of(nonKernelExtensions.cbegin(), nonKernelExtensions.cend(),
-                    [&pathToKernel](const QString &extension) -> bool { return pathToKernel.endsWith(extension, Qt::CaseInsensitive); }))
-        return { KernelPathCheckerResult::KPCR_WARNING, tr("Suffix `%1` does not seem to be a Trojan-Go Core.\r\n"
-                                                           "It should be like `trojan-go` or `trojan-go.exe`.") };
+    const QStringList nonKernelExtensions = { ".so", ".dll", ".dylib", ".zip", ".rar", ".gz", ".tar", ".xz", ".txt" };
+    if (const auto it =
+            std::find_if(nonKernelExtensions.cbegin(), nonKernelExtensions.cend(),
+                         [&pathToKernel](const QString &extension) -> bool { return pathToKernel.endsWith(extension, Qt::CaseInsensitive); });
+        it != nonKernelExtensions.cend())
+        return { KernelPathCheckerResult::KPCR_WARNING, tr("The suffix `%1` does not seem to be of a Trojan-Go Core.\r\n"
+                                                           "Its filename should have been like `trojan-go` or `trojan-go.exe`.")
+                                                            .arg(*it) };
 
     // check the existance, read permission and file size issues.
     if (QFile kernelFile(pathToKernel); !kernelFile.exists())
@@ -43,50 +49,124 @@ std::tuple<KernelPathCheckerResult, std::optional<QString>> TrojanGoSettingsWidg
 
 void TrojanGoSettingsWidget::on_selectKernelBtn_clicked()
 {
-
-#if defined(Q_OS_MAC)
-    const static QString platformDefaultKernelDir = "/usr/local/bin";
-    const static QString platformKernelPathFilter = "Trojan-Go Core(trojan-go*);;All Files(*)";
-#elif defined(Q_OS_UNIX)
-    const static QString platformDefaultKernelDir = "/usr/bin";
-    const static QString platformKernelPathFilter = "Trojan-Go Core(trojan-go*);;All Files(*)";
-#elif defined(Q_OS_WIN)
-    const static QString platformDefaultKernelDir = "";
-    const static QString platformKernelPathFilter = "Trojan-Go Core(trojan-go.exe);;All Files(*)";
-#else
-    const static QString platformDefaultKernelDir = "";
-    const static QString platformKernelPathFilter = "";
-#endif
-
     const auto path = QFileDialog::getOpenFileName(this, tr("Select Trojan-Go Core"), platformDefaultKernelDir, platformKernelPathFilter);
     if (path.isEmpty())
         return;
 
-    const auto [result, someErrMsg] = this->preliminaryKernelPathChecker(path);
+    // debounce: disabling this button for now
+    selectKernelBtn->setEnabled(false);
+
+    if (handleKernelPathCheck(path))
+    {
+        settings.insert("kernelPath", path);
+        kernelPathTxt->setText(path);
+    }
+
+    // debounce: recover in 800ms
+    debounceTimer.singleShot(800, this, &TrojanGoSettingsWidget::debounceUnfreeze);
+}
+
+void TrojanGoSettingsWidget::debounceUnfreeze()
+{
+    selectKernelBtn->setEnabled(true);
+}
+
+bool TrojanGoSettingsWidget::handleKernelPathCheck(const QString &pathToCheck)
+{
+    const auto [result, someErrMsg] = this->preliminaryKernelPathChecker(pathToCheck);
     switch (result)
     {
         case KernelPathCheckerResult::KPCR_VERY_OK: break;
         case KernelPathCheckerResult::KPCR_FAILURE:
         {
             QMessageBox::critical(this, tr("Trojan-Go Core Path Check Failed"),
-                                  tr("Path `%1` did not pass kernel path checker:\r\n%2").arg(path, *someErrMsg));
-            return;
+                                  tr("Path `%1` did not pass kernel path checker:\r\n%2").arg(pathToCheck, *someErrMsg));
+            return false;
         }
         case KernelPathCheckerResult::KPCR_WARNING:
         {
-            const auto choice = QMessageBox::question(this, tr("Trojan-Go Core Path Warning"),
-                                                      tr("Path `%1` might not be the correct Trojan-Go kernel path:\r\n%2").arg(path, *someErrMsg),
-                                                      QMessageBox::Ignore | QMessageBox::Abort, QMessageBox::Abort);
+            const auto choice =
+                QMessageBox::question(this, tr("Trojan-Go Core Path Warning"),
+                                      tr("Path `%1` might not be the correct Trojan-Go kernel path:\r\n%2").arg(pathToCheck, *someErrMsg),
+                                      QMessageBox::Ignore | QMessageBox::Abort, QMessageBox::Abort);
             if (choice == QMessageBox::Abort)
-                return;
+                return false;
         }
     }
-
-    settings.insert("kernelPath", path);
-    kernelPathTxt->setText(path);
+    return true;
 }
 
-void TrojanGoSettingsWidget::on_kernelPathTxt_textEdited(const QString &arg1)
+void TrojanGoSettingsWidget::dragEnterEvent(QDragEnterEvent *event)
 {
-    settings.insert("kernelPath", arg1);
+    // accept only file-like drops
+    const auto mimeData = event->mimeData();
+    if (!mimeData->hasUrls())
+    {
+        event->ignore();
+        return;
+    }
+
+    // accept only single file drop
+    if (const auto &urlList = mimeData->urls(); urlList.isEmpty() || urlList.length() != 1)
+    {
+        event->ignore();
+        return;
+    }
+
+    // else: let the drag pass
+    event->acceptProposedAction();
+}
+
+void TrojanGoSettingsWidget::dropEvent(QDropEvent *event)
+{
+    const auto mimeData = event->mimeData();
+    if (!mimeData->hasUrls())
+    {
+        return;
+    }
+
+    const auto path = mimeData->urls().first().toLocalFile();
+    if (path.isEmpty())
+    {
+        return;
+    }
+
+    if (handleKernelPathCheck(path))
+    {
+        settings.insert("kernelPath", path);
+        kernelPathTxt->setText(path);
+    }
+}
+
+void TrojanGoSettingsWidget::on_testKernelBtn_clicked()
+{
+    const auto path = settings["kernelPath"].toString();
+    if (path.isEmpty())
+    {
+        QMessageBox::critical(this, tr("Nothing to Test"), tr("Kernel Path is empty."));
+        return;
+    }
+
+    QProcess process;
+#ifdef Q_OS_WIN32
+    process.setProgram(path);
+    process.setProcessChannelMode(QProcess::MergedChannels);
+    process.setNativeArguments("--version");
+    process.start();
+#else
+    process.start(path, { "--version" });
+#endif
+    process.waitForStarted();
+    process.waitForFinished();
+
+    const auto exitCode = process.exitCode();
+    if (exitCode != 0)
+    {
+        QMessageBox::critical(this, tr("Trojan-Go Core Test Failed"),
+                              tr("Trojan-Go Core failed with exit code %1.\r\nReason: %2").arg(exitCode).arg(process.errorString()));
+        return;
+    }
+
+    QString output = process.readAllStandardOutput();
+    QMessageBox::information(this, tr("Trojan-Go Test Result"), output);
 }
