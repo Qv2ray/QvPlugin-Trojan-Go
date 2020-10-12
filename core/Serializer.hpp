@@ -12,10 +12,11 @@ class TrojanGoSerializer : public PluginOutboundHandler
 {
   public:
     explicit TrojanGoSerializer() : PluginOutboundHandler(){};
-    const QString SerializeOutbound(const QString &protocol,  //
-                                    const QString &alias,     //
-                                    const QString &groupName, //
-                                    const QJsonObject &object) const override
+    const QString SerializeOutbound(const QString &protocol,   //
+                                    const QString &alias,      //
+                                    const QString &groupName,  //
+                                    const QJsonObject &object, //
+                                    const QJsonObject &) const override
     {
         Q_UNUSED(groupName)
         const auto obj = TrojanGoShareLinkObject::fromJson(object);
@@ -195,9 +196,22 @@ class TrojanGoSerializer : public PluginOutboundHandler
             return {
                 { INFO_SERVER, outbound["server"].toString() }, //
                 { INFO_PORT, outbound["port"].toInt() },        //
-                { INFO_PROTOCOL, protocol }                     //
+                { INFO_PROTOCOL, protocol },
+                { INFO_SNI, outbound["sni"] } //
             };
         return {};
+    }
+
+    const void SetOutboundInfo(const QString &protocol, const OutboundInfoObject &info, QJsonObject &outbound) const override
+    {
+        if (protocol != "trojan-go")
+            return;
+        if (info.contains(INFO_PORT))
+            outbound["port"] = info[INFO_PORT].toInt();
+        if (info.contains(INFO_SERVER))
+            outbound["server"] = info[INFO_SERVER].toInt();
+        if (info.contains(INFO_SNI))
+            outbound["sni"] = info[INFO_SNI].toString();
     }
 
     const QList<QString> SupportedLinkPrefixes() const override
