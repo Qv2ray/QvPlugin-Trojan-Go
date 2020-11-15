@@ -36,6 +36,8 @@ add_library(${PROJECT_NAME} MODULE
     widgets/TrojanGoOutboundWidget.ui
     resx.qrc
     ${QVPLUGIN_INTERFACE_HEADERS})
+
+install(TARGETS ${PROJECT_NAME} DESTINATION share/qv2ray/plugins)
     
 if(APPLE)
     add_custom_command(TARGET ${PROJECT_NAME}
