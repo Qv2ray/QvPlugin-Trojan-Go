@@ -1,0 +1,145 @@
+name: QvPlugin Build Action Qt6 - cmake
+
+on: 
+  push:
+  release:
+    types: [prereleased]
+
+jobs:
+  build:
+    strategy:
+      matrix:
+        qt_version: [6.0.0]
+        platform: [ubuntu-20.04, macos-latest, windows-latest]
+        include:
+          - platform: windows-latest
+            qtarch: win64_msvc2019_64
+      fail-fast: false
+        
+    runs-on: ${{ matrix.platform }}
+    env:
+        ACTIONS_ALLOW_UNSECURE_COMMANDS: true
+    steps:
+      - name: Get the version
+        id: get_version
+        shell: bash
+        run: echo ::set-output name=VERSION::$(echo $GITHUB_REF | cut -d / -f 3)
+      - name: Get Plugin Name
+        id: get_name
+        shell: bash
+        run: echo ::set-output name=NAME::QvPlugin-Trojan
+      - name: Checking out sources
+        uses: actions/checkout@master
+      - name: Install Python 3.7 version
+        uses: actions/setup-python@v1
+        with:
+          python-version: '3.7'
+      - name: Restoring submodules
+        run: git submodule update --init
+# =========================================================================================================
+      - name: Install MSVC compiler
+        if: matrix.platform == 'windows-latest'
+        uses: ilammy/msvc-dev-cmd@v1
+        with:
+          toolset: 14.2
+          arch: x64
+      - name: Cache Qt
+        id: cache-qt
+        uses: actions/cache@v1
+        with:
+          path: ../Qt
+          key: QtCache-${{ matrix.platform }}-${{ matrix.qt_version }}
+      - name: Installing Qt - ${{ matrix.arch }}
+        uses: jurplel/install-qt-action@v2
+        with:
+          version: ${{ matrix.qt_version }}
+          arch: ${{ matrix.qtarch }}
+          cached: ${{ steps.cache-qt.outputs.cache-hit }}
+      # =========================================================================================================
+      - name: Linux - ${{ matrix.qt_version }} - Build preparation - Install Packages
+        if: matrix.platform == 'ubuntu-20.04'
+        run: |
+          sudo apt update
+          sudo apt install -y libgl-dev libx11-dev libxkbcommon-x11-dev libxcb-image0-dev libxcb-icccm4-dev libxcb-keysyms1 libxcb-render-util0 libxcb-xinerama0
+# ========================================================================================================= Generate MakeFile and Build
+      - name: Windows - ${{ matrix.qt_version }} - Generate Dependencies and Build
+        shell: bash
+        if: matrix.platform == 'windows-latest'
+        env:
+          CC: cl.exe
+          CXX: cl.exe
+        run: |
+          mkdir build
+          cd build
+          cmake .. -DCMAKE_BUILD_TYPE=Release -A x64 -DQVPLUGIN_USE_QT6=ON
+          cmake --build . --parallel $(nproc) --config Release
+# --------------------------------------------------------
+      - name: macOS - ${{ matrix.qt_version }} - Generate Dependencies and Build
+        shell: bash
+        if: matrix.platform == 'macos-latest'
+        run: |
+          mkdir build
+          cd build
+          cmake .. -DCMAKE_BUILD_TYPE=Release -DQVPLUGIN_USE_QT6=ON
+          cmake --build . --parallel $(sysctl -n hw.logicalcpu)
+# --------------------------------------------------------
+      - name: Linux - ${{ matrix.qt_version }} - Generate Dependencies and Build
+        if: matrix.platform == 'ubuntu-20.04'
+        shell: bash
+        env:
+          CC: gcc-7
+          CXX: g++-7
+          CXXFLAGS: -fno-sized-deallocation
+        run: |
+          mkdir build
+          cd build
+          cmake .. -DCMAKE_BUILD_TYPE=Release -DQVPLUGIN_USE_QT6=ON
+          cmake --build . --parallel $(nproc)
+# ========================================================================================================= Deployments
+      - name: Win - ${{ matrix.qt_version }} - Uploading artifact
+        if: matrix.platform == 'windows-latest'
+        uses: actions/upload-artifact@master
+        with:
+          name: ${{ steps.get_name.outputs.NAME }}-${{ github.sha }}.Windows.Qt${{ matrix.qt_version }}.dll
+          path: build/Release/${{ steps.get_name.outputs.NAME }}.dll
+      - name: Win - ${{ matrix.qt_version }} - Upload binaries to release
+        uses: svenstaro/upload-release-action@v1-release
+        if: github.event_name == 'release' && matrix.platform == 'windows-latest'
+        with:
+          repo_token: ${{ secrets.GITHUB_TOKEN }}
+          file: build/Release/${{ steps.get_name.outputs.NAME }}.dll
+          asset_name: ${{ steps.get_name.outputs.NAME }}.${{ steps.get_version.outputs.VERSION }}.Windows.Qt6.dll
+          tag: ${{ github.ref }}
+          overwrite: true
+# --------------------------------------------------------
+      - name: macOS - ${{ matrix.qt_version }} - Uploading Artifact
+        if: matrix.platform == 'macos-latest'
+        uses: actions/upload-artifact@master
+        with:
+          name: ${{ steps.get_name.outputs.NAME }}-${{ github.sha }}.macOS.Qt${{ matrix.qt_version }}.so
+          path: build/lib${{ steps.get_name.outputs.NAME }}.so
+      - name: macOS - ${{ matrix.qt_version }} - Upload binaries to release
+        uses: svenstaro/upload-release-action@v1-release
+        if: github.event_name == 'release' && matrix.platform == 'macos-latest'
+        with:
+          repo_token: ${{ secrets.GITHUB_TOKEN }}
+          file: build/lib${{ steps.get_name.outputs.NAME }}.so
+          asset_name: ${{ steps.get_name.outputs.NAME }}.${{ steps.get_version.outputs.VERSION }}.macOS.Qt6.so
+          tag: ${{ github.ref }}
+          overwrite: true
+# --------------------------------------------------------
+      - name: Linux - ${{ matrix.qt_version }} - Uploading artifact
+        if: matrix.platform == 'ubuntu-20.04'
+        uses: actions/upload-artifact@master
+        with:
+          name: ${{ steps.get_name.outputs.NAME }}-${{ github.sha }}.Linux.Qt${{ matrix.qt_version }}.so
+          path: build/lib${{ steps.get_name.outputs.NAME }}.so
+      - name: Linux - ${{ matrix.qt_version }} - Upload binaries to release
+        uses: svenstaro/upload-release-action@v1-release
+        if: github.event_name == 'release' && matrix.platform == 'ubuntu-20.04'
+        with:
+          repo_token: ${{ secrets.GITHUB_TOKEN }}
+          file: build/lib${{ steps.get_name.outputs.NAME }}.so
+          asset_name: ${{ steps.get_name.outputs.NAME }}.${{ steps.get_version.outputs.VERSION }}.Linux.Qt6.so
+          tag: ${{ github.ref }}
+          overwrite: true
