@@ -5,6 +5,7 @@
 #include <QObject>
 #include <QUrl>
 #include <QUrlQuery>
+#include <QtDebug>
 #include <QtGlobal>
 
 using namespace Qv2rayPlugin;
