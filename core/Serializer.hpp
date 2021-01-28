@@ -5,6 +5,8 @@
 #include <QObject>
 #include <QUrl>
 #include <QUrlQuery>
+#include <QtDebug>
+#include <QtGlobal>
 
 using namespace Qv2rayPlugin;
 
@@ -34,7 +36,14 @@ class TrojanGoSerializer : public PluginOutboundHandler
             query.addQueryItem("sni", obj.sni);
         if (obj.type == TRANSPORT_WEBSOCKET)
         {
-            query.addQueryItem("host", QUrl::toPercentEncoding(obj.host));
+            if (!obj.host.isEmpty())
+            {
+                query.addQueryItem("host", QUrl::toPercentEncoding(obj.host));
+            }
+            else
+            {
+                qWarning() << "empty host is deprecated when websocket is used";
+            }
             query.addQueryItem("path", QUrl::toPercentEncoding(obj.path));
             if (!obj.encryption.isEmpty())
                 query.addQueryItem("encryption", QUrl::toPercentEncoding(obj.encryption));
