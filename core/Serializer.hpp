@@ -51,7 +51,7 @@ class TrojanGoSerializer : public PluginOutboundHandler
                 query.addQueryItem("plugin", QUrl::toPercentEncoding(obj.plugin));
         }
         url.setQuery(query);
-        return url.toString(QUrl::FullyDecoded);
+        return url.toString(QUrl::FullyEncoded);
     }
     const QPair<QString, QJsonObject> DeserializeOutbound(const QString &url, QString *alias, QString *errorMessage) const override
     {
